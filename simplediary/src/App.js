@@ -36,6 +36,27 @@ import { useState, useRef } from "react";
 function App() {
   const [data, setData] = useState([]);
   const dataId = useRef(0);
+
+  const getData = async () => {
+    const res = await fetch(
+      "https://jsonplaceholder.typicond.com/comments"
+    ).then((res) => res.json());
+
+    const initData = res.slice(0, 20).map((it) => {
+      return {
+        athor: it.email,
+        content: it.body,
+        emotion: Math.floor(Math.random() * 5) + 1,
+        id: dataId.current++,
+      };
+    });
+    setData(initData);
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
   const onCreate = (author, content, emotion) => {
     const created_date = new Date().getTime();
     const newItem = {
@@ -63,6 +84,7 @@ function App() {
   };
   return (
     <div className="App">
+      {/* <LifeCycle /> */}
       <DiaryEditor onCreate={onCreate} />
       <DiaryList onEdit={onEdit} onDelete={onDelete} diaryList={data} />
     </div>
