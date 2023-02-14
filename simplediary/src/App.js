@@ -1,7 +1,8 @@
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
-import { useState, useRef } from "react";
+// import OptimizeTest from "./OptimizeTest";
+import { useState, useRef, useMemo, useCallback } from "react";
 
 // const dummmyList = [
 //   {
@@ -57,7 +58,7 @@ function App() {
     getData();
   }, []);
 
-  const onCreate = (author, content, emotion) => {
+  const onCreate = useCallback((author, content, emotion) => {
     const created_date = new Date().getTime();
     const newItem = {
       author,
@@ -67,25 +68,42 @@ function App() {
       id: dataId.current,
     };
     dataId.current += 1;
-    setData([newItem, ...data]);
-  };
-  const onDelete = (targetId) => {
-    console.log(targetId);
-    const newDiaryList = data.filter((item) => item.id !== targetId);
-    setData(newDiaryList);
-  };
+    // setData([newItem, ...data]);
+    setData((data) => [newItem, ...data]); //함수를 전달하는것을 함수형 update --> 최신의 state를 인자로 받으면서 최신의 state 참조 가능
+  }, []);
+  const onDelete = useCallback((targetId) => {
+    setData((data) => data.filter((item) => item.id !== targetId));
+    // const newDiaryList = data.filter((item) => item.id !== targetId);
+    // setData(newDiaryList);
+  }, []);
 
-  const onEdit = (targetId, targetContent) => {
-    setData(
+  const onEdit = useCallback((targetId, targetContent) => {
+    setData((data) =>
       data.map((item) =>
         item.id === targetId ? { ...item, content: targetContent } : item
       )
     );
-  };
+  }, []);
+
+  const getDiaryAnalysis = useMemo(() => {
+    const goodCount = data.filter((it) => ite.emotion >= 3).length;
+    const badCount = data.length - goodCount;
+    const goodRatio = (goodCount / data.length) * 100;
+    return { goodCount, badCount, goodRatio };
+  }, [data.length]); //함수가 아닌 값을 return
+
+  // const { goodCount, badCount, goodRatio } = getDiaryAnalysis();
+  const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
+
   return (
     <div className="App">
+      {/* <OptimizeTest /> */}
       {/* <LifeCycle /> */}
       <DiaryEditor onCreate={onCreate} />
+      <div>전체 일기:{data.length}</div>
+      <div>기분좋은 일기 갯수:{goodCount}</div>
+      <div>기분나쁜 일기 갯수:{badCount}</div>
+      <div>기분좋은 일기 비율{goodRatio}</div>
       <DiaryList onEdit={onEdit} onDelete={onDelete} diaryList={data} />
     </div>
   );
