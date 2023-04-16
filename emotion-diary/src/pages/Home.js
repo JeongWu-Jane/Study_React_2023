@@ -6,6 +6,10 @@ import DiaryList from "../components/DiaryList";
 
 const Home = () => {
   const diaryList = useContext(DiaryStateContext);
+  useEffect(() => {
+    const titleElement = document.getElementsByTagName("title")[0];
+    titleElement.innerHTML = `My Emotion Diary`;
+  }, []);
 
   const [data, setData] = useState([]);
   const [curDate, setCurDate] = useState(new Date());
